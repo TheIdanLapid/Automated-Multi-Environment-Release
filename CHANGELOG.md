@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/compare/v0.3.0...v0.4.0) (2026-06-10)
+
+
+### Features
+
+* Bash Parameter Expansion ([#10](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/issues/10)) ([b0528f4](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/commit/b0528f4425ad09a0a11b0b42fdfe509803967ec4))
+
 ## [0.3.0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/compare/v0.2.0...v0.3.0) (2026-06-10)
 
 
