@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/compare/v0.1.0...v0.2.0) (2026-06-10)
+
+
+### Features
+
+* add application info endpoint ([#6](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/issues/6)) ([4067635](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/commit/40676350f37ff7dc4b66068ddbaff70220281ff4))
+
 ## 0.1.0 (2026-06-10)
 
 
