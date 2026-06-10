@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/compare/v0.5.0...v0.6.0) (2026-06-10)
+
+
+### Features
+
+* Enhance deployment workflow to support rollback version input ([8fa221d](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/commit/8fa221d4bd2a88206219491e69d6a75cd060bf26))
+* Enhance deployment workflow to support rollback version input ([33d0672](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/commit/33d06729d38f25ed684ec7c5967768d409d9da47))
+
 ## [0.5.0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/compare/v0.4.0...v0.5.0) (2026-06-10)
 
 
