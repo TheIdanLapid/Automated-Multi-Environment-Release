@@ -20,16 +20,28 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Determine Target Tag
+        id: vars
+        run: |
+          # Priority: Manual input (Rollback), then automated release tag
+          if [ -n "${{ github.event.inputs.rollback_version }}" ]; then
+            echo "TARGET_TAG=${{ github.event.inputs.rollback_version }}" >> $GITHUB_ENV
+            echo "Deployment mode: ROLLBACK to ${{ github.event.inputs.rollback_version }}"
+          else
+            echo "TARGET_TAG=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+            echo "Deployment mode: STANDARD RELEASE of ${{ github.event.release.tag_name }}"
+          fi
+
       - name: Build Docker Image
         run: |
-          TAG="${{ github.event.release.tag_name }}"
+          # If both values are empty (manual trigger without input), fallback to latest
+          TAG="${{ env.TARGET_TAG }}"
           docker build -t my-app:${TAG:-latest} .
 
       - name: Simulate Deployment to Staging
         run: |
-          echo "Deploying version ${{ github.event.release.tag_name }} to Staging environment..."
-          sleep 5
-          echo "Deployment to Staging successful."
+          echo "Deploying version ${{ env.TARGET_TAG }} to Staging..."
+          sleep 3
 
   deploy-prod:
     name: Deploy to Production
@@ -43,6 +55,7 @@ jobs:
 
       - name: Simulate Deployment to Production
         run: |
-          echo "Deploying version ${{ github.event.release.tag_name }} to Production environment..."
-          sleep 5
-          echo "Deployment to Production successful."
+          # Retrieve the tag from inputs, release context, or fallback to latest
+          TAG="${{ github.event.inputs.rollback_version || github.event.release.tag_name }}"
+          echo "Deploying version ${TAG:-latest} to Production environment..."
+          sleep 3
