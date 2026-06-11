@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/compare/v0.6.0...v0.7.0) (2026-06-11)
+
+
+### Features
+
+* Update deployment workflow to include package permissions and enhance Docker image handling ([#17](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/issues/17)) ([49ea790](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/commit/49ea790110a2bacd600bf848b36af878037a2f96))
+
 ## [0.6.0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/compare/v0.5.0...v0.6.0) (2026-06-10)
 
 
