@@ -10,6 +10,11 @@ on:
         required: false
         default: ''
 
+# Mandate package permissions for GHCR access
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   deploy-staging:
     name: Deploy to Staging
@@ -23,25 +28,29 @@ jobs:
       - name: Determine Target Tag
         id: vars
         run: |
-          # Priority: Manual input (Rollback), then automated release tag
           if [ -n "${{ github.event.inputs.rollback_version }}" ]; then
             echo "TARGET_TAG=${{ github.event.inputs.rollback_version }}" >> $GITHUB_ENV
-            echo "Deployment mode: ROLLBACK to ${{ github.event.inputs.rollback_version }}"
           else
             echo "TARGET_TAG=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
-            echo "Deployment mode: STANDARD RELEASE of ${{ github.event.release.tag_name }}"
           fi
 
-      - name: Build Docker Image
-        run: |
-          # If both values are empty (manual trigger without input), fallback to latest
-          TAG="${{ env.TARGET_TAG }}"
-          docker build -t my-app:${TAG:-latest} .
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Simulate Deployment to Staging
+      - name: Build and Push Docker Image
         run: |
-          echo "Deploying version ${{ env.TARGET_TAG }} to Staging..."
-          sleep 3
+          TAG="${{ env.TARGET_TAG }}"
+          # Docker image paths must be lowercase
+          LOWERCASE_REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_NAME="ghcr.io/${LOWERCASE_REPO}"
+          
+          echo "Building and pushing ${IMAGE_NAME}:${TAG:-latest}"
+          docker build -t ${IMAGE_NAME}:${TAG:-latest} .
+          docker push ${IMAGE_NAME}:${TAG:-latest}
 
   deploy-prod:
     name: Deploy to Production
@@ -53,9 +62,18 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Simulate Deployment to Production
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Simulate Pull and Production Deployment
         run: |
-          # Retrieve the tag from inputs, release context, or fallback to latest
           TAG="${{ github.event.inputs.rollback_version || github.event.release.tag_name }}"
-          echo "Deploying version ${TAG:-latest} to Production environment..."
-          sleep 3
+          LOWERCASE_REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_NAME="ghcr.io/${LOWERCASE_REPO}"
+          
+          echo "Pulling verified artifact: docker pull ${IMAGE_NAME}:${TAG:-latest}"
+          echo "Promoting artifact to Production environment successful."
