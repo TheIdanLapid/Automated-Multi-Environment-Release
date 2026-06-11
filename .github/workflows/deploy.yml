@@ -10,7 +10,6 @@ on:
         required: false
         default: ''
 
-# Mandate package permissions for GHCR access
 permissions:
   contents: read
   packages: write
@@ -44,13 +43,40 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           TAG="${{ env.TARGET_TAG }}"
-          # Docker image paths must be lowercase
           LOWERCASE_REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           IMAGE_NAME="ghcr.io/${LOWERCASE_REPO}"
           
-          echo "Building and pushing ${IMAGE_NAME}:${TAG:-latest}"
           docker build -t ${IMAGE_NAME}:${TAG:-latest} .
           docker push ${IMAGE_NAME}:${TAG:-latest}
+
+      - name: Run Smoke Test on Staging Artifact
+        run: |
+          TAG="${{ env.TARGET_TAG }}"
+          LOWERCASE_REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_NAME="ghcr.io/${LOWERCASE_REPO}"
+          
+          echo "Starting container for smoke testing..."
+          docker run -d -p 8000:8000 --name staging-test-app ${IMAGE_NAME}:${TAG:-latest}
+          
+          # Allow the FastAPI application time to initialize
+          sleep 5
+          
+          # Query the health endpoint and capture the HTTP status code
+          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health)
+          
+          echo "Fetch logs from container before cleanup:"
+          docker logs staging-test-app
+          
+          echo "Cleaning up test container..."
+          docker rm -f staging-test-app
+          
+          # Validate the response code is 200 OK
+          if [ "$STATUS_CODE" -eq 200 ]; then
+            echo "Smoke test passed successfully with HTTP 200."
+          else
+            echo "Smoke test failed! Application returned HTTP status: ${STATUS_CODE}"
+            exit 1
+          fi
 
   deploy-prod:
     name: Deploy to Production
