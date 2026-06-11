@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/compare/v0.7.0...v0.8.0) (2026-06-11)
+
+
+### Features
+
+* Implement smoke test for Docker image deployment ([#19](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/issues/19)) ([aa144c0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/commit/aa144c0919a7182d4f1882a42784e9635af3b88c))
+
 ## [0.7.0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/compare/v0.6.0...v0.7.0) (2026-06-11)
 
 
