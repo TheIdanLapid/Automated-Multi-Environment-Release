@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.8.0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/compare/v0.7.0...v0.8.0) (2026-06-11)
+
+
+### Features
+
+* Implement smoke test for Docker image deployment ([#19](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/issues/19)) ([aa144c0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/commit/aa144c0919a7182d4f1882a42784e9635af3b88c))
+
+## [0.7.0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/compare/v0.6.0...v0.7.0) (2026-06-11)
+
+
+### Features
+
+* Update deployment workflow to include package permissions and enhance Docker image handling ([#17](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/issues/17)) ([49ea790](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/commit/49ea790110a2bacd600bf848b36af878037a2f96))
+
+## [0.6.0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/compare/v0.5.0...v0.6.0) (2026-06-10)
+
+
+### Features
+
+* Enhance deployment workflow to support rollback version input ([8fa221d](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/commit/8fa221d4bd2a88206219491e69d6a75cd060bf26))
+* Enhance deployment workflow to support rollback version input ([33d0672](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/commit/33d06729d38f25ed684ec7c5967768d409d9da47))
+
 ## [0.5.0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/compare/v0.4.0...v0.5.0) (2026-06-10)
 
 
