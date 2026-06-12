@@ -27,10 +27,13 @@ jobs:
       - name: Determine Target Tag
         id: vars
         run: |
+          # Priority: Manual input (Rollback), then automated release tag
           if [ -n "${{ github.event.inputs.rollback_version }}" ]; then
             echo "TARGET_TAG=${{ github.event.inputs.rollback_version }}" >> $GITHUB_ENV
+            echo "Deployment mode: ROLLBACK to ${{ github.event.inputs.rollback_version }}"
           else
             echo "TARGET_TAG=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+            echo "Deployment mode: STANDARD RELEASE of ${{ github.event.release.tag_name }}"
           fi
 
       - name: Log in to GitHub Container Registry
@@ -43,9 +46,11 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           TAG="${{ env.TARGET_TAG }}"
+          # Docker image paths must be lowercase
           LOWERCASE_REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           IMAGE_NAME="ghcr.io/${LOWERCASE_REPO}"
           
+          echo "Building and pushing ${IMAGE_NAME}:${TAG:-latest}"
           docker build -t ${IMAGE_NAME}:${TAG:-latest} .
           docker push ${IMAGE_NAME}:${TAG:-latest}
 
@@ -55,24 +60,45 @@ jobs:
           LOWERCASE_REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           IMAGE_NAME="ghcr.io/${LOWERCASE_REPO}"
           
+          echo "Starting container for smoke testing..."
           docker run -d -p 8000:8000 --name staging-test-app ${IMAGE_NAME}:${TAG:-latest}
+          
+          # Allow the FastAPI application time to initialize
           sleep 5
+          
+          # Query the health endpoint and capture the HTTP status code
           STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health)
+          
+          echo "Fetch logs from container before cleanup:"
+          docker logs staging-test-app
+          
+          echo "Cleaning up test container..."
           docker rm -f staging-test-app
           
+          # Validate the response code is 200 OK
           if [ "$STATUS_CODE" -eq 200 ]; then
-            exit 0
+            echo "Smoke test passed successfully with HTTP 200."
           else
+            echo "Smoke test failed! Application returned HTTP status: ${STATUS_CODE}"
             exit 1
           fi
 
-      # This step triggers only if any previous step in this job fails
-      - name: Notify Slack on Staging Failure
+      - name: Send Email on Staging Failure
         if: failure()
-        run: |
-          echo "Sending Failure Notification..."
-          # In a real environment, you would use:
-          # curl -X POST -H 'Content-type: application/json' --data '{"text":"❌ Staging Deployment Failed!"}' ${{ secrets.SLACK_WEBHOOK_URL }}
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.GMAIL_ADDRESS }}
+          password: ${{ secrets.APP_PASS }}
+          subject: "❌ Deployment Failure: ${{ github.repository }}"
+          to: lapididan@gmail.com # Replace with your target inbox
+          from: "GitHub Actions Bot"
+          body: |
+            Staging deployment failed for project ${{ github.repository }}.
+            Version: ${{ env.TARGET_TAG }}
+            Triggered by: ${{ github.actor }}
+            Review full logs at: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   deploy-prod:
     name: Deploy to Production
@@ -100,8 +126,18 @@ jobs:
           echo "Pulling verified artifact: docker pull ${IMAGE_NAME}:${TAG:-latest}"
           echo "Promoting artifact to Production environment successful."
 
-      # This step triggers only if the production deployment completes successfully
-      - name: Notify Slack on Production Success
+      - name: Send Email on Production Success
         if: success()
-        run: |
-          echo "Sending Success Notification..."
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.GMAIL_ADDRESS }}
+          password: ${{ secrets.APP_PASS }}
+          subject: "🚀 Deployment Success: ${{ github.repository }}"
+          to: lapididan@gmail.com # Replace with your target inbox
+          from: "GitHub Actions Bot"
+          body: |
+            Production deployment succeeded for project ${{ github.repository }}.
+            Version: ${{ github.event.inputs.rollback_version || github.event.release.tag_name }}
+            Triggered by: ${{ github.actor }}
