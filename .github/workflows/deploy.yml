@@ -55,28 +55,24 @@ jobs:
           LOWERCASE_REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           IMAGE_NAME="ghcr.io/${LOWERCASE_REPO}"
           
-          echo "Starting container for smoke testing..."
           docker run -d -p 8000:8000 --name staging-test-app ${IMAGE_NAME}:${TAG:-latest}
-          
-          # Allow the FastAPI application time to initialize
           sleep 5
-          
-          # Query the health endpoint and capture the HTTP status code
           STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health)
-          
-          echo "Fetch logs from container before cleanup:"
-          docker logs staging-test-app
-          
-          echo "Cleaning up test container..."
           docker rm -f staging-test-app
           
-          # Validate the response code is 200 OK
           if [ "$STATUS_CODE" -eq 200 ]; then
-            echo "Smoke test passed successfully with HTTP 200."
+            exit 0
           else
-            echo "Smoke test failed! Application returned HTTP status: ${STATUS_CODE}"
             exit 1
           fi
+
+      # This step triggers only if any previous step in this job fails
+      - name: Notify Slack on Staging Failure
+        if: failure()
+        run: |
+          echo "Sending Failure Notification..."
+          # In a real environment, you would use:
+          # curl -X POST -H 'Content-type: application/json' --data '{"text":"❌ Staging Deployment Failed!"}' ${{ secrets.SLACK_WEBHOOK_URL }}
 
   deploy-prod:
     name: Deploy to Production
@@ -103,3 +99,9 @@ jobs:
           
           echo "Pulling verified artifact: docker pull ${IMAGE_NAME}:${TAG:-latest}"
           echo "Promoting artifact to Production environment successful."
+
+      # This step triggers only if the production deployment completes successfully
+      - name: Notify Slack on Production Success
+        if: success()
+        run: |
+          echo "Sending Success Notification..."
