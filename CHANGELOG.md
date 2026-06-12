@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/compare/v0.9.0...v0.10.0) (2026-06-12)
+
+
+### Features
+
+* Enhance deployment workflow with email notifications for staging and production success/failure ([#24](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/issues/24)) ([835fba5](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/commit/835fba59f35c81d72a7a9711b48495b56015f066))
+
 ## [0.9.0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/compare/v0.8.0...v0.9.0) (2026-06-12)
 
 
