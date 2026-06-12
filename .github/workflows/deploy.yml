@@ -10,7 +10,6 @@ on:
         required: false
         default: ''
 
-# Mandate package permissions for GHCR access
 permissions:
   contents: read
   packages: write
@@ -44,13 +43,36 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           TAG="${{ env.TARGET_TAG }}"
-          # Docker image paths must be lowercase
           LOWERCASE_REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           IMAGE_NAME="ghcr.io/${LOWERCASE_REPO}"
           
-          echo "Building and pushing ${IMAGE_NAME}:${TAG:-latest}"
           docker build -t ${IMAGE_NAME}:${TAG:-latest} .
           docker push ${IMAGE_NAME}:${TAG:-latest}
+
+      - name: Run Smoke Test on Staging Artifact
+        run: |
+          TAG="${{ env.TARGET_TAG }}"
+          LOWERCASE_REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_NAME="ghcr.io/${LOWERCASE_REPO}"
+          
+          docker run -d -p 8000:8000 --name staging-test-app ${IMAGE_NAME}:${TAG:-latest}
+          sleep 5
+          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health)
+          docker rm -f staging-test-app
+          
+          if [ "$STATUS_CODE" -eq 200 ]; then
+            exit 0
+          else
+            exit 1
+          fi
+
+      # This step triggers only if any previous step in this job fails
+      - name: Notify Slack on Staging Failure
+        if: failure()
+        run: |
+          echo "Sending Failure Notification..."
+          # In a real environment, you would use:
+          # curl -X POST -H 'Content-type: application/json' --data '{"text":"❌ Staging Deployment Failed!"}' ${{ secrets.SLACK_WEBHOOK_URL }}
 
   deploy-prod:
     name: Deploy to Production
@@ -77,3 +99,9 @@ jobs:
           
           echo "Pulling verified artifact: docker pull ${IMAGE_NAME}:${TAG:-latest}"
           echo "Promoting artifact to Production environment successful."
+
+      # This step triggers only if the production deployment completes successfully
+      - name: Notify Slack on Production Success
+        if: success()
+        run: |
+          echo "Sending Success Notification..."
