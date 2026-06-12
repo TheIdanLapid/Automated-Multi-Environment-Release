@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/compare/v0.8.0...v0.9.0) (2026-06-12)
+
+
+### Features
+
+* Enhance deployment workflow with Slack notifications and improved Docker image handling ([#22](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/issues/22)) ([e0d0cf8](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/commit/e0d0cf897fd12e8f7afd8fd242a36b6fddc93aec))
+
 ## [0.8.0](https://github.com/TheIdanLapid/Automated-Multi-Environment-Release/compare/v0.7.0...v0.8.0) (2026-06-11)
 
 
